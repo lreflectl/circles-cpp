@@ -3,8 +3,10 @@
 
 using namespace std;
 
+
 class Point
 {
+private:
     int x;
     int y;
 
@@ -42,14 +44,15 @@ public:
     }
 };
 
-class Circle
+class Shape
 {
+protected:
+    Point* points = nullptr;
+    int pointsLen;
 public:
-    Circle(Point &center, const int radius)
+    ~Shape()
     {
-        this->center = center;
-        this->radius = radius;
-        calcPoints();
+        delete[] points;
     }
 
     int getPointsLen(){
@@ -59,29 +62,13 @@ public:
     Point* & getPoints(){
         return points;
     }
+};
 
-    bool isPointOnCircle(Point& point)
-    {
-        for (int i = 0; i < pointsLen; i++)
-        {
-            if (point == points[i]) return true;
-        }
-        return false;
-    }
-
-    bool isPointInCircle(Point &point) // except those on circle
-    {
-        int squareRadius = radius * radius;
-        int value = round(pow(point.getX() - center.getX(), 2) + pow(point.getY() - center.getX(), 2));
-        return value < squareRadius;
-    }
-
+class Circle : public Shape
+{
 private:
     Point center;
     int radius;
-
-    Point *points;
-    int pointsLen;
 
     void calcPoints()
     {
@@ -120,12 +107,56 @@ private:
             points[8*quarter + 2] = Point(center.getX() + radius, center.getY()); // right
             points[8*quarter + 3] = Point(center.getX() - radius, center.getY()); // left
         }
-        
+    }
+
+public:
+    Circle(Point &center, const int radius)
+    {
+        this->center = center;
+        this->radius = radius;
+        calcPoints();
+    }
+
+    bool isPointOnCircle(Point& point)
+    {
+        for (int i = 0; i < pointsLen; i++)
+        {
+            if (point == points[i]) return true;
+        }
+        return false;
+    }
+
+    bool isPointInCircle(Point &point) // except those on circle
+    {
+        int squareRadius = radius * radius;
+        int value = round(pow(point.getX() - center.getX(), 2) + pow(point.getY() - center.getX(), 2));
+        return value < squareRadius;
+    }
+};
+
+class Line : public Shape
+{
+private:
+    Point a;
+    Point b;
+
+public:
+    Line(Point a, Point b)
+    {
+        this->a = a;
+        this->b = b;
+        calculatePoints();
+    }
+
+    void calculatePoints()
+    {
+
     }
 };
 
 class Axis
 {
+private:
     int size;
     char **ax;
 
@@ -144,17 +175,16 @@ public:
         }
     }
 
-    template <class T>
-    void drawObject(T &object, const char symbol)
+    void drawShape(Shape &shape, const char symbol)
     {
-        if (object.getPointsLen() > 0)
+        if (shape.getPointsLen() > 0)
         {
             int x, col;
             int y, row;
-            for (int i = 0; i < object.getPointsLen(); i++)
+            for (int i = 0; i < shape.getPointsLen(); i++)
             {
-                x = object.getPoints()[i].getX();
-                y = object.getPoints()[i].getY();
+                x = shape.getPoints()[i].getX();
+                y = shape.getPoints()[i].getY();
 
                 row = y;
                 col = x;
@@ -194,7 +224,7 @@ int main()
     Point center(5, 5);
     Circle mainCircle(center, 3);
 
-    ax.drawObject(mainCircle, '#');
+    ax.drawShape(mainCircle, '#');
     ax.printAxis();
 
     return 0;
