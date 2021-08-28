@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 class Point
 {
 private:
@@ -43,6 +42,11 @@ public:
 
     bool operator ==(Point& other){
         return x == other.x && y == other.y;
+    }
+
+    void print()
+    {
+        cout <<"X = " << this->x << " Y = " << this->y << endl;
     }
 };
 
@@ -87,6 +91,12 @@ public:
         delete[] points;
         points = temp;
         pointsLen = realLen;
+    }
+
+    Point & getRandomPoint()
+    {
+        int randomIndex = rand() % (pointsLen - 1);
+        return points[randomIndex];
     }
 };
 
@@ -158,12 +168,6 @@ public:
         int squareRadius = radius * radius;
         int value = round(pow(point.getX() - center.getX(), 2) + pow(point.getY() - center.getX(), 2));
         return value < squareRadius;
-    }
-
-    Point & getRandomPointOnCircle()  // todo
-    {
-        int randomIndex = rand() % (pointsLen - 1);
-        return points[randomIndex];
     }
 };
 
@@ -314,8 +318,10 @@ int main()
     Point b;
 
     srand(time(NULL));
-    a = mainCircle.getRandomPointOnCircle();
-    b = mainCircle.getRandomPointOnCircle();
+    a = mainCircle.getRandomPoint();
+    b = mainCircle.getRandomPoint();
+    a.print();
+    b.print();
 
     Line line(a, b);
 
