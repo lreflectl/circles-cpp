@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cmath>
+#include <random>
+#include <ctime>
 
 using namespace std;
 
@@ -13,8 +15,8 @@ private:
 public:
     Point()
     {
-        x = 0;
-        y = 0;
+        x = -1;
+        y = -1;
     }
 
     Point(int x, int y)
@@ -61,6 +63,30 @@ public:
 
     Point* & getPoints(){
         return points;
+    }
+
+    void clearRedundantPoints()  // constraining array with skipping redundant points
+    {
+        int realLen = 0;
+        for (int i = 0; i < pointsLen; i++)
+        {
+            if (points[i].getX() != -1)
+            {
+                realLen++;
+            }
+        }
+        Point* temp = new Point[realLen];
+        for (int i = 0, j = 0; i < pointsLen; i++)
+        {
+            if (points[i].getX() != -1)
+            {
+                temp[j] = points[i];
+                 j++;
+            }
+        }
+        delete[] points;
+        points = temp;
+        pointsLen = realLen;
     }
 };
 
@@ -115,6 +141,7 @@ public:
         this->center = center;
         this->radius = radius;
         calcPoints();
+        clearRedundantPoints();        
     }
 
     bool isPointOnCircle(Point& point)
@@ -132,6 +159,12 @@ public:
         int value = round(pow(point.getX() - center.getX(), 2) + pow(point.getY() - center.getX(), 2));
         return value < squareRadius;
     }
+
+    Point & getRandomPointOnCircle()  // todo
+    {
+        int randomIndex = rand() % (pointsLen - 1);
+        return points[randomIndex];
+    }
 };
 
 class Line : public Shape
@@ -139,18 +172,62 @@ class Line : public Shape
 private:
     Point a;
     Point b;
+    
+    void calculatePoints()
+    {
+        // getting number of points
+        int xProjectionLen = abs(b.getX() - a.getX());
+        int yProjectionLen = abs(b.getY() - a.getY());
+
+        pointsLen = xProjectionLen + yProjectionLen + 2;
+        points = new Point[pointsLen];
+
+        // a and b on circle
+        points[xProjectionLen + yProjectionLen] = a;
+        points[xProjectionLen + yProjectionLen + 1] = b;
+
+        
+        int startY, startX;
+        a.getY() <= b.getY() ? startY = a.getY() : startY = b.getY();
+        a.getX() <= b.getX() ? startX = a.getX() : startX = b.getX();
+
+        if (xProjectionLen == 0)
+        {
+            for (int i = 0; i < yProjectionLen; i++) // only by y axis
+            {
+                points[i] = Point(startX, startY + (i+1));
+            }
+        }
+        else if (yProjectionLen == 0)
+        {
+            for (int i = 0; i < xProjectionLen; i++) // only by x axis
+            {
+                points[i] = Point(startX + (i+1), startY);
+            }
+        }
+        else
+        {
+            float k = (float) (b.getY() - a.getY()) / (b.getX() - a.getX());
+            float c = (float) a.getY() - k * a.getX();
+
+            for (int i = 0; i < xProjectionLen; i++) // by x axis
+            {
+                points[i] = Point(startX + (i+1), round(k*(startX + (i+1)) + c) ); // y = k*x + b
+            }
+            for (int i = 0; i < yProjectionLen; i++) // by y axis
+            {
+                points[xProjectionLen + i] = Point(round((startY + (i+1) - c)/k), startY + (i+1) ); // x = (y - c)/k
+            }
+        }
+    }
 
 public:
-    Line(Point a, Point b)
+    Line(Point &a, Point &b)
     {
         this->a = a;
         this->b = b;
         calculatePoints();
-    }
-
-    void calculatePoints()
-    {
-
+        clearRedundantPoints();
     }
 };
 
@@ -185,6 +262,13 @@ public:
             {
                 x = shape.getPoints()[i].getX();
                 y = shape.getPoints()[i].getY();
+
+                if (x < 0 || y < 0 || x > size || y > size)
+                {
+                    cout << "Wrong coordinates of figure! Skipping..." << endl;
+                    return;
+                }
+                
 
                 row = y;
                 col = x;
@@ -225,6 +309,18 @@ int main()
     Circle mainCircle(center, 3);
 
     ax.drawShape(mainCircle, '#');
+
+    Point a;
+    Point b;
+
+    srand(time(NULL));
+    a = mainCircle.getRandomPointOnCircle();
+    b = mainCircle.getRandomPointOnCircle();
+
+    Line line(a, b);
+
+    ax.drawShape(line, '*');
+
     ax.printAxis();
 
     return 0;
