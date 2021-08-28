@@ -136,13 +136,13 @@ private:
             if (!isPointOnCircle(topLeft))     points[i + 5*quarter] = topLeft;
             if (!isPointOnCircle(bottomRight)) points[i + 6*quarter] = bottomRight;
             if (!isPointOnCircle(bottomLeft))  points[i + 7*quarter] = bottomLeft;
+        }
 
-            // adding furthest points
+        // adding furthest points
             points[8*quarter    ] = Point(center.getX(), center.getY() + radius); // top
             points[8*quarter + 1] = Point(center.getX(), center.getY() - radius); // bottom
             points[8*quarter + 2] = Point(center.getX() + radius, center.getY()); // right
             points[8*quarter + 3] = Point(center.getX() - radius, center.getY()); // left
-        }
     }
 
 public:
@@ -168,6 +168,18 @@ public:
         int squareRadius = radius * radius;
         int value = round(pow(point.getX() - center.getX(), 2) + pow(point.getY() - center.getX(), 2));
         return value < squareRadius;
+    }
+
+    Point getRandomPointInCircle()
+    {
+        Point r;
+        do
+        {
+            int randX = center.getX() - radius + (rand() % (radius*2));
+            int randY = center.getY() - radius + (rand() % (radius*2));
+            r = Point(randX, randY);
+        } while (!this->isPointInCircle(r));
+        return r;
     }
 };
 
@@ -307,10 +319,10 @@ public:
 
 int main()
 {
-    Axis ax(11);
+    Axis ax(40);
 
-    Point center(5, 5);
-    Circle mainCircle(center, 3);
+    Point center(20, 20);
+    Circle mainCircle(center, 10);
 
     ax.drawShape(mainCircle, '#');
 
@@ -326,6 +338,22 @@ int main()
     Line line(a, b);
 
     ax.drawShape(line, '*');
+
+    Point r1 = mainCircle.getRandomPointInCircle();
+    Circle randomCircle1(r1, 3);
+    ax.drawShape(randomCircle1, '0');
+
+    Point r2 = mainCircle.getRandomPointInCircle();
+    Circle randomCircle2(r2, 2);
+    ax.drawShape(randomCircle2, '0');
+
+    Point r3 = mainCircle.getRandomPointInCircle();
+    Circle randomCircle3(r3, 1);
+    ax.drawShape(randomCircle3, '0');
+
+    Point r4 = mainCircle.getRandomPointInCircle();
+    Circle randomCircle4(r4, 1);
+    ax.drawShape(randomCircle4, '0');
 
     ax.printAxis();
 
